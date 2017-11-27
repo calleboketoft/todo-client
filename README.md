@@ -33,8 +33,7 @@ Enter the application
 ```bash
 cd stugan-client
 ```
-
-Edit the file `src/app/app.component.ts`:
+Open the folder `stugan-client` in Visual Studio Code and replace the content in the file `src/app/app.component.ts` with this:
 
 ```javascript
 import { Component } from '@angular/core';
@@ -57,19 +56,21 @@ export class AppComponent { }
 
 ```
 
-Try out the new application
+Try out the new application by starting the development server in a terminal:
 ```bash
 npm start
 ```
 
-Live reload is enabled by default so editing any file will cause a re-compile and browser reload.
+The project is available at http://localhost:4200. Live reload is enabled by default so editing any file will cause a re-compile and browser reload.
 
 ## Adding NgRX store and effects
-We will use the NgRX modules for state management.
+We will use the NgRX modules for state management and side-effects (making requests to the server).
 
 NgRX is a collection of Reactive libraries for Angular. https://github.com/ngrx/platform
 * @ngrx/store - RxJS powered state management for Angular applications, inspired by Redux
 * @ngrx/effects - Side Effect model for @ngrx/store to model event sources as actions.
+
+Install the NgRX packages into `stugan-client`:
 
 ```bash
 npm install --save @ngrx/store @ngrx/effects
@@ -102,13 +103,16 @@ import { todoReducer } from './reducers/todo.reducer';
 ...
 
 @NgModule({
+  ...
   imports: [
+    ...
     StoreModule.forRoot({ todoReducer: todoReducer })
   ]
+  ...
 }
 ```
 
-Create the Todo effects `src/app/effects/todo.effects.ts`. Note that we're also using the Angular HttpClient:
+Create the Todo effects `src/app/effects/todo.effects.ts`. Note that we're using the Angular HttpClient:
 
 ```javascript
 // This is the place where "side-effects" are gathered.
@@ -151,14 +155,17 @@ import { TodoEffects } from './effects/todo.effects';
 ...
 
 @NgModule({
+  ...
   imports: [
+    ...
     HttpClientModule,
     EffectsModule.forRoot([TodoEffects])
   ]
+  ...
 })
 ```
 
-The plumbing is now done and we're ready to load the todos that are on the server. Edit `src/app/app.component.ts`:
+The reducer and effect for loading todos is now done and we're ready to get the todos that are on the server. Edit `src/app/app.component.ts`:
 
 ```javascript
 ...
@@ -187,7 +194,7 @@ export class AppComponent {
 }
 ```
 
-Now take a look at the live app in the browser. In the console, we can see that the collection of todos have been loaded from te server.
+Now take a look at the live app in the browser. In the console, we can see that the collection of todos have been loaded from the server.
 
 ## UI with Angular Material
 
@@ -206,6 +213,7 @@ import { MatCheckboxModule, MatListModule, MatInputModule, MatFormFieldModule, M
 ...
 
 @NgModule({
+  ...
   imports: [
     ...
     BrowserAnimationsModule,
@@ -215,6 +223,7 @@ import { MatCheckboxModule, MatListModule, MatInputModule, MatFormFieldModule, M
     MatFormFieldModule,
     MatButtonModule
   ]
+  ...
 })
 ```
 
@@ -222,6 +231,8 @@ Import Material CSS into `src/styles.css`:
 ```css
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 ```
+
+The parts of Angular Material that we're going to use for this project are now imported and ready to use.
 
 ## Display list of todos
 
@@ -238,7 +249,7 @@ import { Component, Input } from '@angular/core';
   selector: 'stugan-todo-item',
   template: `
     <mat-list-item>
-        {{ todo.title }}
+      {{ todo.title }}
     </mat-list-item>
   `,
   styles: [`
@@ -252,16 +263,17 @@ export class TodoItemComponent {
 }
 ```
 
-Now let's render the list of todo items on the template of `src/app/app.component.ts`:
+Now let's render the list of todo items in the template of `src/app/app.component.ts`:
 ```html
 ...
-<div class="container">
-  <mat-list>
-    <stugan-todo-item *ngFor="let todo of todos$ | async"
-      [todo]="todo">
-    </stugan-todo-item>
-  </mat-list>
-</div>
+    <div class="container">
+      <h1>Stugan!</h1>
+      <mat-list>
+        <stugan-todo-item *ngFor="let todo of todos$ | async"
+          [todo]="todo">
+        </stugan-todo-item>
+      </mat-list>
+    </div>
 ...
 ```
 
@@ -271,13 +283,15 @@ The list of todos should now be visible in the browser.
 
 Displaying the todos is done and now we want to add some interactivity. Let's begin with adding functionality for checking and unchecking a todo as "done".
 
-In the file `src/app/todo-item/todo-item.component.ts`, replace `{{ todo.title }}` in its template with the following `<mat-checkbox>` element:
+In the file `src/app/todo-item/todo-item.component.ts`, replace the template with the following code:
 
 ```html
-<mat-checkbox [checked]="todo.done"
-  (change)="clickTodoCheckbox($event, todo)">
-  {{ todo.title }}
-</mat-checkbox>
+    <mat-list-item>
+      <mat-checkbox [checked]="todo.done"
+        (change)="clickTodoCheckbox($event, todo)">
+        {{ todo.title }}
+      </mat-checkbox>
+    </mat-list-item>
 ```
 
 In the template we're now referencing a function called `clickTodoCheckbox()` so we need to add that one as well:
@@ -295,13 +309,13 @@ In the template we're now referencing a function called `clickTodoCheckbox()` so
 
 Clicking the checkbox will log the updated todo object.
 
-We want to keep this component "dumb", so we aren't going to make any requests or dispatch any actions from within this component. Therefore we will send the updated todo as an "output" to the "smart" parent of this component:
+We want to keep this component "dumb", so we aren't going to make any requests or dispatch any actions from within this component. Therefore we will send the updated todo as an "output" to the "smart" parent of this component. Import the following into `src/app/todo-item/todo-item.component.ts`:
 ```javascript
 ...
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Output, EventEmitter } from '@angular/core';
 ...
 ```
-Outputs are so called "EventEmitters" which send events upstream in the component hierarchy.
+Angular component outputs are so called "EventEmitters" which send events upstream in the component hierarchy. Add the output `toggleTodoDone` and update the method `clickTodoCheckbox()`:
 ```javascript
 @Input() todo;
 @Output() toggleTodoDone = new EventEmitter();
@@ -313,15 +327,15 @@ Outputs are so called "EventEmitters" which send events upstream in the componen
 ...
 ```
 
-Now the parent of this component will be able to catch the event `(toggleTodoDone)` from the `TodoItemComponent`. Listen to the event from the parent component in `src/app/app.component.ts`:
+Now the parent of this component `AppComponent` will be able to catch the event `(toggleTodoDone)` from the `TodoItemComponent`. Listen to the event from the parent component in `src/app/app.component.ts`:
 ```html
-<stugan-todo-item *ngFor="let todo of todos$ | async"
-  [todo]="todo"
-  (toggleTodoDone)="toggleTodoDone($event)">
-</stugan-todo-item>
+        <stugan-todo-item *ngFor="let todo of todos$ | async"
+          [todo]="todo"
+          (toggleTodoDone)="toggleTodoDone($event)">
+        </stugan-todo-item>
 ```
 
-When the event (toggleTodoDone) happens, we will call the function `toggleTodoDone()` that will eventually make the actual call for action to the store. For now it'll just log the todo as well:
+When the event (toggleTodoDone) happens, we will call the function `toggleTodoDone()` that will eventually make the actual call for action to the store. For now it'll just log the todo for now:
 ```javascript
 toggleTodoDone (todo) {
   console.log(todo);
@@ -331,7 +345,9 @@ toggleTodoDone (todo) {
 Now we'll set up a reducer function that will take care of syncing the client state for when a todo has been updated on the server. Add the reducer code to `src/app/reducers/todo.reducer.ts`:
 ```javascript
 export const UPDATED_TODO = 'UPDATED_TODO';
+
 ...
+
 case UPDATED_TODO:
   // overwrite properties in stored todo that are incoming in the payload
   return state.map(todo => {
@@ -346,9 +362,13 @@ case UPDATED_TODO:
 Then we'll add an "effect" that will perform the request to the server for updating a todo item, `src/app/effects/todo.effects.ts`:
 ```javascript
 import { UPDATED_TODO } from '../reducers/todo.reducer';
+
 ...
+
 export const PATCH_TODO = 'PATCH_TODO';
+
 ...
+
 @Effect() patchTodo$ = this.actions$.ofType(PATCH_TODO)
   .mergeMap((action: any) => {
     return this.httpClient.patch(`http://localhost:4201/api/Todos/${action.payload.id}`, action.payload)
@@ -356,11 +376,13 @@ export const PATCH_TODO = 'PATCH_TODO';
   })
 ```
 
-The plumbing for handling the request and response of updating a todo is done. Let's import the action type `PATCH_TODO` and update the function `toggleTodoDone()` in the file `src/app/app.component.ts` to dispatch the action to the store:
+Handling the request and response of updating a todo is done. Let's import the action type `PATCH_TODO` and update the method `toggleTodoDone()` in the file `src/app/app.component.ts` to dispatch the action to the store:
 ```javascript
 import { PATCH_TODO } from './effects/todo.effects';
+
 ...
-toggleTodoDone($event) {
+
+toggleTodoDone(todo) {
   this.store.dispatch({ type: PATCH_TODO, payload: todo });
 }
 ```
@@ -373,7 +395,7 @@ We'll go ahead and add the reducer and effect code for deleting todos. Add to `s
 ```javascript
 ...
 
-export const DELETED_TODO = 'REMOVE_TODO';
+export const DELETED_TODO = 'DELETED_TODO';
 
 ...
 
@@ -391,6 +413,8 @@ Add to `src/app/effects/todo.effects.ts`:
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/zip';
 import { Observable, BehaviorSubject } from 'rxjs/Rx';
+
+...
 
 import { DELETED_TODO } from '../reducers/todo.reducer';
 
@@ -425,7 +449,7 @@ Handling the request and response is done, a button for removing a todo would be
       </button>
 ```
 
-Keeping `todo-item.component.ts` dumb is important so we're going to let the parent (`app.component.ts`) handle the request this time as well. Add to `src/app/todo-item/todo-item.component.ts`:
+Keeping `todo-item.component.ts` dumb is important so we're going to let the parent (`AppComponent`) handle the request this time as well. Add to `src/app/todo-item/todo-item.component.ts`:
 ```javascript
 ...
 
@@ -434,7 +458,7 @@ Keeping `todo-item.component.ts` dumb is important so we're going to let the par
 ...
 ```
 
-Now handle the new `(deleteTodo)` event on the component `<stugan-todo-item>` in `src/app/app.component.ts`:
+Now receive the new `(deleteTodo)` event in the template on the component `<stugan-todo-item>` in `src/app/app.component.ts`:
 ```html
         <stugan-todo-item *ngFor="let todo of todos$ | async"
           [todo]="todo"
@@ -454,19 +478,19 @@ import { DELETE_TODO } from './effects/todo.effects';
   }
 ```
 
-Now there should buttons with an `X` to the right of the todos. Clicking that button will dispatch the action `DELETE_TODO` and a request will be made to the server to delete the todo.
+Now take a look at the browser again. There should be buttons with `X`s to the right of the todos. Clicking such a button will dispatch the action `DELETE_TODO` and a request will be made to the server to delete the todo.
 
 ## Adding todos
 
-To complete the whole circle we should of course be able to add todos as well. Let's begin with the reducer and effect again. Add to `src/app/reducers/todo.reducer.ts`:
+To complete the whole circle we should be able to add todos as well. Let's begin with the reducer and effect. Add to `src/app/reducers/todo.reducer.ts`:
 
 ```javascript
-export const ADDED_TODO = 'ADD_TODO';
+export const ADDED_TODO = 'ADDED_TODO';
 
 ...
 
     case ADDED_TODO:
-        // create a new array with all previous todos and add the new one
+      // create a new array with all previous todos and add the new one
       return [...state, action.payload];
 ```
 
@@ -477,6 +501,10 @@ import { ADDED_TODO } from '../reducers/todo.reducer';
 
 ...
 
+export const POST_TODO = 'POST_TODO';
+
+...
+
   @Effect() addTodo$ = this.actions$.ofType(POST_TODO)
     .mergeMap((action: any) => {
       return this.httpClient.post('http://localhost:4201/api/Todos', action.payload)
@@ -484,7 +512,7 @@ import { ADDED_TODO } from '../reducers/todo.reducer';
     })
 ```
 
-That's it for the request - response handling. The view for adding a todo would nicely fit a dumb component containing a form with an input. Since we're going to work with a form, we need to import and activate the form module in the file `src/app/app.module.ts`:
+That's it for the request and response handling. The view for adding a todo would nicely fit a dumb component containing a form with an input. Since we're going to work with a form, we need to import and activate the form module in the file `src/app/app.module.ts`:
 ```javascript
 import { ReactiveFormsModule } from '@angular/forms';
 
@@ -496,6 +524,7 @@ import { ReactiveFormsModule } from '@angular/forms';
   ...
     ReactiveFormsModule
   ]
+  ...
 })
 ```
 
@@ -537,9 +566,9 @@ export class TodoAddFormComponent {
 }
 ```
 
-Here we're using an Angular tool called `FormBuilder`, which is used to construct reactive (RxJS) forms. There are different ways of managing forms in Angular and this is the most dynamic one. "Template Driven Forms" in Angular 5 is kind of like managing forms in AngularJS and easily becomes messy (in my opinion).
+Here we're using an Angular tool called `FormBuilder`, which is used to construct reactive (RxJS) forms. There are different ways of managing forms in Angular 5 and this is the most dynamic one. "Template Driven Forms" in Angular 5 is kind of like managing forms in AngularJS and easily becomes messy (in my opinion).
 
-Our new component needs to be exposed in the UI, so let's add it to the template of `src/app/app.component.ts`,right inside of `<div class="container">`:
+Our new component needs to be exposed in the UI, so let's add it to the template of `src/app/app.component.ts`, right inside of `<div class="container">`:
 ```javascript
       <stugan-todo-add-form
         (addTodo)="addTodo($event)">
@@ -557,7 +586,9 @@ import { POST_TODO} from './effects/todo.effects';
   }
 ```
 
-The todo app is now done!!
+Go to the browser and try out the new input field for adding a todo. Type the name of the new todo and press enter.
+
+The todo app is now done and ready for action!
 
 ## Further adventures
 
@@ -566,4 +597,4 @@ The todo app is now done!!
 - Debouncing form input using the power of the reactive form
 - Adding a reducer function and an effect for loading one todo
 - Routing to one todo
-- Reactive internationalisation
+- Writing tests for the different components
