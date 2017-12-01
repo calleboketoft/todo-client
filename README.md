@@ -2,8 +2,8 @@
 
 Prerequisites:
 
-* Node >= 6.9.0
-* NPM >= 3.x.x
+* Node >= 8.9.1
+* NPM >= 5.2.0
 * Visual Studio Code (VSC) https://code.visualstudio.com/
 * VSC plugin "Angular Language Service"
 * VSC plugin "Angular 2 inline"
@@ -19,14 +19,9 @@ Now the server will be available at http://localhost:4201
 
 ## Generating a new Angular 5 application
 
-Install Angular CLI
-```bash
-npm install -g @angular/cli@v1.6.0-rc.0
-```
-
 Generate a new Angular application
 ```bash
-ng new stugan-client --prefix=stugan --minimal=true --inline-template=true --inline-style=true
+npx @angular/cli@v1.6.0-rc.1 new stugan-client --prefix=stugan --minimal=true --inline-template=true --inline-style=true
 ```
 
 Enter the application
