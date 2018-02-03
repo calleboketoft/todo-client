@@ -30,6 +30,6 @@ export class TodoItemComponent {
 
   clickTodoCheckbox($event, todo) {
     let updatedTodo = Object.assign({}, todo, { done: $event.checked })
-    console.log(updatedTodo)
+    this.toggleTodoDone.emit(updatedTodo)
   }
 }
