@@ -15,7 +15,7 @@ import {
   MatFormFieldModule,
   MatButtonModule
 } from '@angular/material'
-import { TodoItemComponent } from './todo-item/todo-item.component';
+import { TodoItemComponent } from './todo-item/todo-item.component'
 import { TodoAddFormComponent } from './todo-add-form/todo-add-form.component'
 
 @NgModule({

@@ -8,7 +8,8 @@
     "build": "ng build --prod",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "format": "prettier --write \"src/**/*.ts\""
   },
   "private": true,
   "dependencies": {
@@ -33,6 +34,7 @@
     "@angular/cli": "~1.7.0-beta.3",
     "@angular/compiler-cli": "^5.2.0",
     "@angular/language-service": "^5.2.0",
+    "prettier": "^1.10.2",
     "typescript": "~2.5.3"
   }
 }
