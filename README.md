@@ -24,7 +24,7 @@ Now the server will be available at http://localhost:4201
 Generate a new Angular application
 
 ```bash
-npx @angular/cli@v1.7.0 new stugan-client --prefix=stugan --minimal=true --inline-template=true --inline-style=true
+npx @angular/cli new stugan-client --prefix=stugan --minimal=true --inline-template=true --inline-style=true
 ```
 
 Enter the application
