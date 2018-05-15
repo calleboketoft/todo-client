@@ -122,9 +122,11 @@ Create the Todo effects `src/app/effects/todo.effects.ts`. Note that we're using
 // This is the place where "side-effects" are gathered.
 // In this case, we're going to make requests to a http server.
 import { mergeMap, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Effect, Actions } from '@ngrx/effects';
+import { Action } from '@ngrx/store';
 
 import { LOADED_TODOS } from '../reducers/todo.reducer';
 
