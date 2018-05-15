@@ -1,4 +1,4 @@
-# Angular 5 todo application with NgRX
+# Angular todo application with NgRX
 
 Prerequisites:
 
@@ -19,12 +19,12 @@ npm install
 
 Now the server will be available at http://localhost:4201
 
-## Generating a new Angular 5 application
+## Generating a new Angular application
 
 Generate a new Angular application
 
 ```bash
-npx @angular/cli new stugan-client --prefix=stugan --minimal=true --inline-template=true --inline-style=true
+npx @angular/cli new stugan-client --prefix=stugan --skip-tests=true --inline-template=true --inline-style=true
 ```
 
 Enter the application
@@ -36,10 +36,10 @@ cd stugan-client
 Open the folder `stugan-client` in Visual Studio Code and replace the content in the file `src/app/app.component.ts` with this:
 
 ```javascript
-import { Component } from "@angular/core";
+import { Component } from '@angular/core';
 
 @Component({
-  selector: "stugan-root",
+  selector: 'stugan-root',
   template: `
     <div class="container">
       <h1>Stugan!</h1>
@@ -77,7 +77,7 @@ NgRX is a collection of Reactive libraries for Angular. https://github.com/ngrx/
 Install the NgRX packages into `stugan-client`:
 
 ```bash
-npm install --save @ngrx/store @ngrx/effects
+npm install --save @ngrx/store@6.0.0-beta.3 @ngrx/effects@6.0.0-beta.3
 ```
 
 What we're going to do in the following steps is to lay out the plumbing for our todo reducer and our todo effects.
@@ -86,7 +86,7 @@ Create the todo reducer `src/app/reducers/todo.reducer.ts`
 
 ```javascript
 // Reducer types
-export const LOADED_TODOS = "LOADED_TODOS";
+export const LOADED_TODOS = 'LOADED_TODOS';
 
 export function todoReducer(state = [], action) {
   switch (action.type) {
@@ -173,12 +173,13 @@ The reducer and effect for loading todos is now done and we're ready to get the 
 
 ```javascript
 ...
+import { OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { QUERY_TODOS } from './effects/todo.effects';
 
 ...
 
-export class AppComponent {
+export class AppComponent implements OnInit {
 
   // register the observable todos$ that will contain the collection of todos
   todos$ = this.store.select('todoReducer')
