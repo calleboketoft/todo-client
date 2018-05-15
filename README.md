@@ -125,7 +125,7 @@ import { mergeMap, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Effect, Actions } from '@ngrx/effects';
+import { Effect, Actions, ofType } from '@ngrx/effects';
 import { Action } from '@ngrx/store';
 
 import { LOADED_TODOS } from '../reducers/todo.reducer';
