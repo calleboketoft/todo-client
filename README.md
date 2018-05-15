@@ -314,7 +314,7 @@ In the template we're now referencing a function called `clickTodoCheckbox()` so
   @Input() todo;
 
   clickTodoCheckbox($event, todo) {
-    let updatedTodo = Object.assign({}, todo, { done: $event.checked })
+    const updatedTodo = Object.assign({}, todo, { done: $event.checked })
     console.log(updatedTodo);
   }
 ...
@@ -337,7 +337,7 @@ Angular component outputs are so called "EventEmitters" which send events upstre
 @Output() toggleTodoDone = new EventEmitter();
 ...
   clickTodoCheckbox($event, todo) {
-    let updatedTodo = Object.assign({}, todo, { done: $event.checked })
+    const updatedTodo = Object.assign({}, todo, { done: $event.checked })
     this.toggleTodoDone.emit(updatedTodo)
   }
 ...
@@ -389,11 +389,18 @@ export const PATCH_TODO = 'PATCH_TODO';
 
 ...
 
-@Effect() patchTodo$ = this.actions$.ofType(PATCH_TODO)
-  .mergeMap((action: any) => {
-    return this.httpClient.patch(`http://localhost:4201/api/Todos/${action.payload.id}`, action.payload)
-      .map(data => ({ type: UPDATED_TODO, payload: data }))
-  })
+@Effect()
+  patchTodo$ = this.actions$.pipe(
+    ofType(PATCH_TODO),
+    mergeMap((action: any) => {
+      return this.httpClient
+        .patch(
+          `http://localhost:4201/api/Todos/${action.payload.id}`,
+          action.payload
+        )
+        .pipe(map(data => ({ type: UPDATED_TODO, payload: data })));
+    })
+  );
 ```
 
 Handling the request and response of updating a todo is done. Let's import the action type `PATCH_TODO` and update the method `toggleTodoDone()` in the file `src/app/app.component.ts` to dispatch the action to the store:
@@ -432,9 +439,8 @@ export const DELETED_TODO = 'DELETED_TODO';
 Add to `src/app/effects/todo.effects.ts`:
 
 ```javascript
-import 'rxjs/add/operator/switchMap';
-import 'rxjs/add/operator/zip';
-import { Observable, BehaviorSubject } from 'rxjs/Rx';
+import { switchMap } from 'rxjs/operators';
+import { BehaviorSubject, from, zip } from 'rxjs';
 
 ...
 
@@ -446,21 +452,25 @@ export const DELETE_TODO = 'DELETE_TODO';
 
 ...
 
-  @Effect() deleteTodo$ = this.actions$.ofType(DELETE_TODO)
+  @Effect() deleteTodo$ = this.actions$.pipe(
+    ofType(DELETE_TODO),
     // Here we need to pass foward the action to the mergeMap so that we can
     // use the id for the todo in the reducer
-    .switchMap((action: any) => {
+    switchMap((action: any) => {
       // create a new observable with both the result from the delete request
       // and a preloaded observable (BehaviorSubject) with the action
-      return Observable.zip(
-        this.httpClient.delete(`http://localhost:4201/api/Todos/${action.payload.id}`),
+      return zip(
+        this.httpClient.delete(
+          `http://localhost:4201/api/Todos/${action.payload.id}`
+        ),
         new BehaviorSubject(action)
-      )
-    })
+      );
+    }),
     // Here the data from both observables is available
-    .mergeMap(([res, action]: any) => {
-      return Observable.from([{ type: DELETED_TODO, payload: action.payload }])
+    mergeMap(([res, action]: any) => {
+      return from([{ type: DELETED_TODO, payload: action.payload }]);
     })
+  );
 ```
 
 Handling the request and response is done, a button for removing a todo would be nice. Add that button under `</mat-checkbox>` in the template of `src/app/todo-item/todo-item.component.ts`:
@@ -531,11 +541,14 @@ export const POST_TODO = 'POST_TODO';
 
 ...
 
-  @Effect() addTodo$ = this.actions$.ofType(POST_TODO)
-    .mergeMap((action: any) => {
-      return this.httpClient.post('http://localhost:4201/api/Todos', action.payload)
-      .map(data => ({ type: ADDED_TODO, payload: data }))
+  @Effect()addTodo$ = this.actions$.pipe(
+    ofType(POST_TODO),
+    mergeMap((action: any) => {
+      return this.httpClient
+        .post('http://localhost:4201/api/Todos', action.payload)
+        .pipe(map(data => ({ type: ADDED_TODO, payload: data })));
     })
+  );
 ```
 
 That's it for the request and response handling. The view for adding a todo would nicely fit a dumb component containing a form with an input. Since we're going to work with a form, we need to import and activate the form module in the file `src/app/app.module.ts`:
@@ -585,7 +598,7 @@ export class TodoAddFormComponent {
   });
 
   submitAddTodoForm($event) {
-    let todoTitleControl = this.addTodoForm.controls.todoTitle
+    const todoTitleControl = this.addTodoForm.controls.todoTitle
     this.addTodo.emit(todoTitleControl.value)
     todoTitleControl.setValue('')
   }
@@ -594,7 +607,7 @@ export class TodoAddFormComponent {
 }
 ```
 
-Here we're using an Angular tool called `FormBuilder`, which is used to construct reactive (RxJS) forms. There are different ways of managing forms in Angular 5 and this is the most dynamic one. "Template Driven Forms" in Angular 5 is kind of like managing forms in AngularJS and easily becomes messy (in my opinion).
+Here we're using an Angular tool called `FormBuilder`, which is used to construct reactive (RxJS) forms. There are different ways of managing forms in Angular and this is the most dynamic one. "Template Driven Forms" in Angular is kind of like managing forms in AngularJS and easily becomes messy (in my opinion).
 
 Our new component needs to be exposed in the UI, so let's add it to the template of `src/app/app.component.ts`, right inside of `<div class="container">`:
 
