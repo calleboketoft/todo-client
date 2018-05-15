@@ -121,8 +121,7 @@ Create the Todo effects `src/app/effects/todo.effects.ts`. Note that we're using
 ```javascript
 // This is the place where "side-effects" are gathered.
 // In this case, we're going to make requests to a http server.
-import 'rxjs/add/operator/mergeMap';
-import 'rxjs/add/operator/map';
+import { mergeMap, map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Effect, Actions } from '@ngrx/effects';
@@ -135,12 +134,15 @@ export const QUERY_TODOS = 'QUERY_TODOS';
 @Injectable()
 export class TodoEffects {
 
-  @Effect() queryTodos$ = this.actions$.ofType(QUERY_TODOS)
-    .mergeMap((action) => {
+  @Effect() queryTodos$: Observable<Action> = this.actions$.pipe(
+    ofType(QUERY_TODOS),
+    mergeMap(action => {
       // We're using the built in @angular/http client for our requests
-      return this.httpClient.get('http://localhost:4201/api/Todos')
-        .map(data => ({ type: LOADED_TODOS, payload: data }))
+      return this.httpClient
+        .get('http://localhost:4201/api/Todos')
+        .pipe(map(data => ({ type: LOADED_TODOS, payload: data })));
     })
+  );
 
   constructor(
     private httpClient: HttpClient,
